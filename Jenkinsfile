@@ -111,18 +111,30 @@ stage('Checkout') {
         }
         
         // Add this new stage
-        stage('Update Kubernetes Manifests') {
-            steps {
-                script {
-                    update_k8s_manifests(
-                        imageTag: env.DOCKER_IMAGE_TAG,
-                        manifestsPath: 'kubernetes',
-                        gitCredentials: 'github-credentials',
-                        gitUserName: 'Jenkins CI',
-                        gitUserEmail: 'yaseerbostbox@gmail.com'
-                    )
-                }
+      stage('Update Kubernetes Manifests') {
+    steps {
+        withCredentials([string(credentialsId: 'github-credentials', variable: 'GITHUB_TOKEN')]) {
+            script {
+                update_k8s_manifests(
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    manifestsPath: 'kubernetes',
+                    gitCredentials: env.GITHUB_TOKEN,
+                    gitUserName: 'Jenkins CI',
+                    gitUserEmail: 'yaseerbostbox@gmail.com'
+                )
             }
         }
+    }
+}
+
+        def call(Map args) {
+    withCredentials([string(credentialsId: args.gitCredentials, variable: 'GITHUB_TOKEN')]) {
+        sh """
+            git config --global user.email '${args.gitUserEmail}'
+            git config --global user.name '${args.gitUserName}'
+            git pull
+            git commit -am "Update manifests"
+            git push https://${GITHUB_TOKEN}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git HEAD:main
+        """
     }
 }
