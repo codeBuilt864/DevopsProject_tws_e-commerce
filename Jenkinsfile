@@ -111,7 +111,7 @@ pipeline {
                 update_k8s_manifests(
                     imageTag: env.DOCKER_IMAGE_TAG,
                     manifestsPath: 'kubernetes',
-                    credentialsId: 'codeBuilt864', // this is final value
+                    gitCredentials: "${USERNAME}:${PASSWORD}".toString(), // this is final value
                     gitUserName: 'Jenkins CI',
                     gitUserEmail: 'yaseerbostbox@gmail.com'
         )
