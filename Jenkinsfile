@@ -21,6 +21,10 @@ pipeline {
             }
         }
         
+    environment {
+        GITHUB_CREDENTIALS = credentials('github-credentials')
+        GIT_BRANCH = "master"
+    }
 
 
  stage('Clone Repository') {
