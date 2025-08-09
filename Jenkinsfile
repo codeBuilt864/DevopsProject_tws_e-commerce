@@ -102,10 +102,11 @@ pipeline {
                 }
             }
         }
-        
+    
         stage('Update Kubernetes Manifests') {
             steps {
                 withCredentials([string(credentialsId: 'github-credentials', variable: 'GITHUB_TOKEN')]) {
+                    sh 'echo $GITHUB_TOKEN'
                     script {
                         update_k8s_manifests(
                             imageTag: env.DOCKER_IMAGE_TAG,
