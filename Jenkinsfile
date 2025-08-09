@@ -110,18 +110,17 @@ stage('Checkout') {
             }
         }
         
-        // Add this new stage
-        stage('Update Kubernetes Manifests') {
-            steps {
-                script {
-                    update_k8s_manifests(
-                        imageTag: env.DOCKER_IMAGE_TAG,
-                        manifestsPath: 'kubernetes',
-                        gitCredentials: 'github-credentials',
-                        gitUserName: 'Jenkins CI',
-                        gitUserEmail: 'yaseerbostbox@gmail.com'
-                    )
-                }
+stage('Update Kubernetes Manifests') {
+    steps {
+        withCredentials([string(credentialsId: 'github-credentials', variable: 'GITHUB_TOKEN')]) {
+            script {
+                update_k8s_manifests(
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    manifestsPath: 'kubernetes',
+                    gitCredentials: env.GITHUB_TOKEN,
+                    gitUserName: 'Jenkins CI',
+                    gitUserEmail: 'yaseerbostbox@gmail.com'
+                )
             }
         }
     }
