@@ -105,7 +105,7 @@ pipeline {
     
         stage('Update Kubernetes Manifests') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         update_k8s_manifests(
                             imageTag: env.DOCKER_IMAGE_TAG,
