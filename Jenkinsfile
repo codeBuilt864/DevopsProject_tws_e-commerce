@@ -102,17 +102,22 @@ pipeline {
                 }
             }
         }
-    
- withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-    script {
-        update_k8s_manifests(
-            imageTag: env.DOCKER_IMAGE_TAG,
-            manifestsPath: 'kubernetes',
-            gitCredentials: "${USERNAME}:${PASSWORD}", // this is final value
-            gitUserName: 'Jenkins CI',
-            gitUserEmail: 'yaseerbostbox@gmail.com'
+        
+           stage('Update Kubernetes Manifests') {
+            steps {
+                 withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            script {
+                update_k8s_manifests(
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    manifestsPath: 'kubernetes',
+                    gitCredentials: "${USERNAME}:${PASSWORD}", // this is final value
+                    gitUserName: 'Jenkins CI',
+                    gitUserEmail: 'yaseerbostbox@gmail.com'
         )
     }
+}
+
+            }
 }
     }
 }
