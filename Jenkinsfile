@@ -103,23 +103,16 @@ pipeline {
             }
         }
     
-def update_k8s_manifests(Map args) {
-    echo "Updating Kubernetes manifests with image tag: ${args.imageTag}"
-
-    sh """
-        git config --global user.name '${args.gitUserName}'
-        git config --global user.email '${args.gitUserEmail}'
-        
-        cd ${args.manifestsPath}
-        
-        # Update image tag in Kubernetes manifests
-        sed -i 's|image: .*|image: myrepo/myimage:${args.imageTag}|' deployment.yaml
-        
-        git add .
-        git commit -m "Update image tag to ${args.imageTag}"
-        git push https://${args.gitCredentials}@github.com/myorg/myrepo.git
-    """
-}
-
+ withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+    script {
+        update_k8s_manifests(
+            imageTag: env.DOCKER_IMAGE_TAG,
+            manifestsPath: 'kubernetes',
+            gitCredentials: "${USERNAME}:${PASSWORD}", // this is final value
+            gitUserName: 'Jenkins CI',
+            gitUserEmail: 'yaseerbostbox@gmail.com'
+        )
     }
 }
+
+
