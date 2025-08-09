@@ -26,7 +26,7 @@ pipeline {
       stage('Clone Repository') {
             steps {
                 script {
-                    clone("https://github.com/yash12j/tws-e-commerce-app_hackathon.git","master")
+                    clone("https://github.com/codeBuilt864/DevopsProject_tws_e-commerce","master")
                 }
             }
         }
