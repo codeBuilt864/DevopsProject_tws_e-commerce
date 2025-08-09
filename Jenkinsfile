@@ -2,14 +2,15 @@
 
 pipeline {
     agent any
-
+    
     environment {
         DOCKER_IMAGE_NAME = 'yash12j/easyshop-app'
         DOCKER_MIGRATION_IMAGE_NAME = 'yash12j/easyshop-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
+        // GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "master"
     }
-
+    
     stages {
         stage('Cleanup Workspace') {
             steps {
@@ -18,20 +19,17 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Checkout') {
+            environment {
+                GITHUB_CREDENTIALS = credentials('githup-credentials') // corrected spelling
+            }
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'codeBuilt864',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
-                    git branch: "${GIT_BRANCH}",
-                        url: "https://${USERNAME}:${PASSWORD}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
-                }
+                git branch: "${GIT_BRANCH}",
+                    url: "https://${env.GITHUB_CREDENTIALS}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
             }
         }
-
+        
         stage('Build Docker Images') {
             parallel {
                 stage('Build Main App Image') {
@@ -46,7 +44,7 @@ pipeline {
                         }
                     }
                 }
-
+                
                 stage('Build Migration Image') {
                     steps {
                         script {
@@ -61,7 +59,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Run Unit Tests') {
             steps {
                 script {
@@ -69,7 +67,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Security Scan with Trivy') {
             steps {
                 script {
@@ -77,7 +75,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Push Docker Images') {
             parallel {
                 stage('Push Main App Image') {
@@ -86,44 +84,41 @@ pipeline {
                             docker_push(
                                 imageName: env.DOCKER_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
-                                credentials: 'dockerhub-credentials' // update this to real Jenkins ID
+                                credentials: 'dockerHup-credencial'
                             )
                         }
                     }
                 }
-
+                
                 stage('Push Migration Image') {
                     steps {
                         script {
                             docker_push(
                                 imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
-                                credentials: 'dockerhub-credentials' // update this to real Jenkins ID
+                                credentials: 'dockerHup-credencial'
                             )
                         }
                     }
                 }
             }
         }
-
-        stage('Update Kubernetes Manifests') {
+        
+           stage('Update Kubernetes Manifests') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'codeBuilt864',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
-                    script {
-                        update_k8s_manifests(
-                            imageTag: env.DOCKER_IMAGE_TAG,
-                            manifestsPath: 'kubernetes',
-                            gitCredentials: "${USERNAME}:${PASSWORD}".toString(),
-                            gitUserName: 'Jenkins CI',
-                            gitUserEmail: 'yaseerbostbox@gmail.com'
-                        )
-                    }
-                }
+                 withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            script {
+                update_k8s_manifests(
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    manifestsPath: 'kubernetes',
+                    gitCredentials: "${USERNAME}:${PASSWORD}".toString(), // this is final value
+                    gitUserName: 'Jenkins CI',
+                    gitUserEmail: 'yaseerbostbox@gmail.com'
+        )
+    }
+}
+
             }
-        }
+}
     }
 }
