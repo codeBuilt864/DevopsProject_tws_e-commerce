@@ -8,7 +8,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'yash12j/easyshop-app'
         DOCKER_MIGRATION_IMAGE_NAME = 'yash12j/easyshop-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
-        GITHUB_CREDENTIALS = credentials('github-credentials')
+        // GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "master"
     }
     
@@ -23,13 +23,15 @@ pipeline {
         
 
 
-      stage('Clone Repository') {
-            steps {
-                script {
-                    clone("https://github.com/codeBuilt864/DevopsProject_tws_e-commerce","master")
-                }
-            }
+ stage('Clone Repository') {
+    steps {
+        script {
+            git branch: "${GIT_BRANCH}",
+                url: "https://${GITHUB_CREDENTIALS}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
         }
+    }
+}
+
         
         stage('Build Docker Images') {
             parallel {
