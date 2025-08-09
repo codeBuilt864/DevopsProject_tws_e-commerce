@@ -120,15 +120,3 @@ pipeline {
         }
     }
 }
-
-def call(Map args) {
-    withCredentials([string(credentialsId: args.gitCredentials, variable: 'GITHUB_TOKEN')]) {
-        sh """
-            git config --global user.email '${args.gitUserEmail}'
-            git config --global user.name '${args.gitUserName}'
-            git pull
-            git commit -am "Update manifests"
-            git push https://${GITHUB_TOKEN}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git HEAD:main
-        """
-    }
-}
