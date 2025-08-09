@@ -21,11 +21,17 @@ pipeline {
             }
         }
         
+
         stage('Clone Repository') {
             steps {
-                script {
-                    clone("https://github.com/LondheShubham153/tws-e-commerce-app.git","master", "${GITHUB_CREDENTIALS}")
-                }
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${env.GIT_BRANCH}"]],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/codeBuilt1864/DevopsProject_tws_e-commerce.git',
+                        credentialsId: "${GITHUB_CREDENTIALS}"
+                    ]]
+                ])
             }
         }
         
