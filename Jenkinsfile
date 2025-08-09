@@ -22,16 +22,12 @@ pipeline {
         }
         
 
-        stage('Clone Repository') {
+
+      stage('Clone Repository') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.GIT_BRANCH}"]],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/codeBuilt1864/DevopsProject_tws_e-commerce.git',
-                        credentialsId: "${GITHUB_CREDENTIALS}"
-                    ]]
-                ])
+                script {
+                    clone("https://github.com/yash12j/tws-e-commerce-app_hackathon.git","master")
+                }
             }
         }
         
