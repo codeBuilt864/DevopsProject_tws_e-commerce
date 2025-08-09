@@ -21,7 +21,7 @@ pipeline {
         
         stage('Checkout') {
             environment {
-                GITHUB_CREDENTIALS = credentials('github-credentials')
+                GITHUB_CREDENTIALS = credentials('githup-credentials') // corrected spelling
             }
             steps {
                 git branch: "${GIT_BRANCH}",
@@ -105,13 +105,12 @@ pipeline {
     
         stage('Update Kubernetes Manifests') {
             steps {
-                withCredentials([string(credentialsId: 'github-credentials', variable: 'GITHUB_TOKEN')]) {
-                    sh 'echo $GITHUB_TOKEN'
+                withCredentials([usernamePassword(credentialsId: 'githup-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     script {
                         update_k8s_manifests(
                             imageTag: env.DOCKER_IMAGE_TAG,
                             manifestsPath: 'kubernetes',
-                            gitCredentials: env.GITHUB_TOKEN,
+                            gitCredentials: "${GIT_USER}:${GIT_PASS}",
                             gitUserName: 'Jenkins CI',
                             gitUserEmail: 'yaseerbostbox@gmail.com'
                         )
