@@ -7,6 +7,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'yash12j/easyshop-app'
         DOCKER_MIGRATION_IMAGE_NAME = 'yash12j/easyshop-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
+        GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "master"
     }
     
@@ -110,7 +111,7 @@ pipeline {
                 update_k8s_manifests(
                     imageTag: env.DOCKER_IMAGE_TAG,
                     manifestsPath: 'kubernetes',
-                    gitCredentials: "${USERNAME}:${PASSWORD}", // this is final value
+                    gitCredentials: 'github-credentials', // this is final value
                     gitUserName: 'Jenkins CI',
                     gitUserEmail: 'yaseerbostbox@gmail.com'
         )
