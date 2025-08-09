@@ -21,20 +21,16 @@ pipeline {
             }
         }
         
+stage('Checkout') {
     environment {
         GITHUB_CREDENTIALS = credentials('github-credentials')
-        GIT_BRANCH = "master"
     }
-
-
- stage('Clone Repository') {
     steps {
-        script {
-            git branch: "${GIT_BRANCH}",
-                url: "https://${GITHUB_CREDENTIALS}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
-        }
+        git branch: "${GIT_BRANCH}",
+            url: "https://${env.GITHUB_CREDENTIALS}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
     }
 }
+
 
         
         stage('Build Docker Images') {
