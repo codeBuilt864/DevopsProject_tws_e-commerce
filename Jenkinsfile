@@ -2,19 +2,16 @@
 
 pipeline {
     agent any
-
-    options {
-        disableConcurrentBuilds()
-        timeout(time: 30, unit: 'MINUTES') // Prevent infinite runs
-    }
-
+    
     environment {
+        // Update the main app image name to match the deployment file
         DOCKER_IMAGE_NAME = 'yash12j/easyshop-app'
         DOCKER_MIGRATION_IMAGE_NAME = 'yash12j/easyshop-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
+        GITHUB_CREDENTIALS = credentials('github-credentials')
         GIT_BRANCH = "master"
     }
-
+    
     stages {
         stage('Cleanup Workspace') {
             steps {
@@ -23,119 +20,103 @@ pipeline {
                 }
             }
         }
-
-        stage('Checkout') {
-            environment {
-                GITHUB_CREDENTIALS = credentials('github-credentials')
-            }
+        
+        stage('Clone Repository') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    git branch: "${GIT_BRANCH}",
-                        url: "https://${env.GITHUB_CREDENTIALS}@github.com/codeBuilt864/DevopsProject_tws_e-commerce.git"
+                script {
+                    clone("https://github.com/codeBuilt864/DevopsProject_tws_e-commerce.git","master")
                 }
             }
         }
-
+        
         stage('Build Docker Images') {
             parallel {
                 stage('Build Main App Image') {
                     steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            script {
-                                docker_build(
-                                    imageName: env.DOCKER_IMAGE_NAME,
-                                    imageTag: env.DOCKER_IMAGE_TAG,
-                                    dockerfile: 'Dockerfile',
-                                    context: '.'
-                                )
-                            }
+                        script {
+                            docker_build(
+                                imageName: env.DOCKER_IMAGE_NAME,
+                                imageTag: env.DOCKER_IMAGE_TAG,
+                                dockerfile: 'Dockerfile',
+                                context: '.'
+                            )
                         }
                     }
                 }
-
+                
                 stage('Build Migration Image') {
                     steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            script {
-                                docker_build(
-                                    imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
-                                    imageTag: env.DOCKER_IMAGE_TAG,
-                                    dockerfile: 'scripts/Dockerfile.migration',
-                                    context: '.'
-                                )
-                            }
+                        script {
+                            docker_build(
+                                imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                                imageTag: env.DOCKER_IMAGE_TAG,
+                                dockerfile: 'scripts/Dockerfile.migration',
+                                context: '.'
+                            )
                         }
                     }
                 }
             }
         }
-
+        
         stage('Run Unit Tests') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    script {
-                        run_tests()
-                    }
+                script {
+                    run_tests()
                 }
             }
         }
-
+        
         stage('Security Scan with Trivy') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    script {
-                        trivy_scan()
-                    }
+                script {
+                    // Create directory for results
+                  
+                    trivy_scan()
+                    
                 }
             }
         }
-
+        
         stage('Push Docker Images') {
             parallel {
                 stage('Push Main App Image') {
                     steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            script {
-                                docker_push(
-                                    imageName: env.DOCKER_IMAGE_NAME,
-                                    imageTag: env.DOCKER_IMAGE_TAG,
-                                    credentials: 'dockerHup-credencial'
-                                )
-                            }
+                        script {
+                            docker_push(
+                                imageName: env.DOCKER_IMAGE_NAME,
+                                imageTag: env.DOCKER_IMAGE_TAG,
+                                credentials: 'docker-hub-credentials'
+                            )
                         }
                     }
                 }
-
+                
                 stage('Push Migration Image') {
                     steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            script {
-                                docker_push(
-                                    imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
-                                    imageTag: env.DOCKER_IMAGE_TAG,
-                                    credentials: 'dockerHup-credencial'
-                                )
-                            }
+                        script {
+                            docker_push(
+                                imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                                imageTag: env.DOCKER_IMAGE_TAG,
+                                credentials: 'docker-hub-credentials'
+                            )
                         }
                     }
                 }
             }
         }
-
+        
+        // Add this new stage
         stage('Update Kubernetes Manifests') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    withCredentials([usernamePassword(credentialsId: 'codeBuilt864', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        script {
-                            update_k8s_manifests(
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                manifestsPath: 'kubernetes',
-                                gitCredentials: "${USERNAME}:${PASSWORD}".toString(),
-                                gitUserName: 'Jenkins CI',
-                                gitUserEmail: 'yaseerbostbox@gmail.com'
-                            )
-                        }
-                    }
+                script {
+                    update_k8s_manifests(
+                        imageTag: env.DOCKER_IMAGE_TAG,
+                        manifestsPath: 'kubernetes',
+                        gitCredentials: 'github-credentials',
+                        gitUserName: 'Jenkins CI',
+                        gitUserEmail: 'misc.lucky66@gmail.com'
+                    )
                 }
             }
         }
