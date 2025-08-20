@@ -28,23 +28,22 @@ module "eks" {
   cluster_endpoint_private_access = true
 
   //access entry for any specific user or role (jenkins controller instance)
-  access_entries = {
-    # Meaningful name for this access entry
+ access_entries = {
   terraform-user-access = {
-    principal_arn = "arn:aws:iam::724772051218:user/test-project-user"  # Fixed account ID
+    principal_arn = "arn:aws:iam::724772051218:user/test-project-user"
     
     policy_associations = {
-      # Meaningful name for this policy association
       cluster-admin-policy = {
-        policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"  # Fixed policy name
+        # CORRECT POLICY ARN:
+        policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+        
         access_scope = {
           type = "cluster"
         }
       }
     }
   }
-  }
-
+}
 
   cluster_security_group_additional_rules = {
     access_for_bastion_jenkins_hosts = {
